@@ -1,6 +1,6 @@
-# mapbox-gl-style-build
+# map-gl-style-build
 
-Build [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers.
+Build [MapLibre GL styles](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers.
 
 A build system lets you more easily maintain stylesheet variations by removing the need to make duplicative changes across multiple stylesheets.
 
@@ -12,7 +12,7 @@ This script assumes you have two directories:
 
 1.  The **styles** directory, which contains each style you want to build. Each style is defined as a JS module that exports two plain JS objects:
     1. `context`: The variables this style defines that will be passed to layers during the build
-    2. `template`: The style, which is a [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
+    2. `template`: The style, which is a [MapLibre GL style](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
 2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from the style. The function
     must return two objects:
     1. `baseStyle`: The base style object
@@ -25,7 +25,7 @@ See the `examples` directory for examples.
 Once installed using your package manager:
 
 ```bash
-mapbox-gl-style-build
+map-gl-style-build
     --style-dir=templates/styles
     --layer-dir=templates/layers
     --out-dir=build
@@ -43,13 +43,13 @@ The parameters are as follows:
 As a module, this library also exports two helper functions:
 
 **`mergeOverrides`:**
-Merges overrides with a base style or other overrides. Typically you can rely on `mapbox-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
+Merges overrides with a base style or other overrides. Typically you can rely on `map-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
 
 _Example:_
 
 ```js
 // layer-template.js
-const { mergeOverrides } = require('mapbox-gl-style-build');
+const { mergeOverrides } = require('map-gl-style-build');
 
 module.exports.default = context => {
   let baseStyle = {
@@ -90,7 +90,7 @@ _Example:_
 
 ```js
  // style-template.js
- const { mergeVariables, modifyNumberVariables } = require('mapbox-gl-style-build');
+ const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
 
  const textSizes = require('../variables/textSizes');
 
@@ -121,7 +121,7 @@ _Example:_
 
 ```js
  // style-template.js
- const { mergeVariables, modifyNumberVariables } = require('mapbox-gl-style-build');
+ const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
 
  const textSizes = require('../variables/textSizes');
 
