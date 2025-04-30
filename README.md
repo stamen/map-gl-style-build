@@ -1,4 +1,4 @@
-# map-gl-style-build
+# Map GL Style Build
 
 Build [MapLibre GL styles](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers.
 
