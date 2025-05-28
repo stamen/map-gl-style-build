@@ -36,7 +36,48 @@ The parameters are as follows:
 - `--style-dir`: the style directory as defined above
 - `--layer-dir`: the layer directory as defined above
 - `--out-dir`: the directory built styles will be placed within
+- `--exclude`: optional glob pattern or file path specifying files to exclude from included files
+- `--include`: optional glob pattern or file path specifying files to include if varying from `style-dir` and `layer-dir`
 - `-v`: include for verbose output
+
+#### `--include` and `--exclude`
+
+Note that the `include` and `exclude` flags can be repeated and order is relevant.
+
+For example, if we have a file structure like:
+
+- `styles /`
+  - `style-1.js`
+  - `style-2.js`
+  - `navigation /`
+    - `nav-style-1.js`
+    - `nav-style-2.js`
+
+Then the following command
+
+```
+map-gl-style-build
+    --style-dir=styles
+    --layer-dir=...
+    --out-dir=...
+    --exclude=styles/navigation/*
+    --include=styles/navigation/nav-style-2.js
+```
+
+would first ignore the `navigation` directory, but then explicitly include `nav-style-2.js`.
+
+Alternatively, switching the order of those would have the same effect as not using the `include` flag
+
+```
+map-gl-style-build
+    --style-dir=styles
+    --layer-dir=...
+    --out-dir=...
+    --include=styles/navigation/nav-style-2.js
+    --exclude=styles/navigation/*
+```
+
+as in this scenario, we first explicitly include `nav-style-2.js` (it would have been included anyway, but using this for the sake of a simple example), then we'd exclude the entire `navigation` directory which includes that style. This means the built styles would include no `navigation` styles at all.
 
 ### Helper functions
 

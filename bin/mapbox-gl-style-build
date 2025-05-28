@@ -36,6 +36,18 @@ const argv = yargs(hideBin(process.argv))
     describe: 'Produce verbose output',
     type: 'boolean'
   })
+  .option('include', {
+    alias: 'include',
+    default: '',
+    describe: 'Files to include',
+    type: 'string'
+  })
+  .option('exclude', {
+    alias: 'exclude',
+    default: '',
+    describe: 'Files to exclude',
+    type: 'string'
+  })
   .example(
     `$0
 \t--style-dir=templates/styles
@@ -45,7 +57,28 @@ const argv = yargs(hideBin(process.argv))
   .parse();
 
 const buildStyles = async (styleDir, layerDir, outputDir, options = {}) => {
-  const stylePaths = await fg([path.resolve(`${styleDir}/**/*.js`)]);
+  const { includeExcludePaths } = options;
+
+  let stylePaths = await fg([path.resolve(`${styleDir}/**/*.js`)]);
+
+  for (const includeExcludePath of includeExcludePaths) {
+    const { flag, pathPattern } = includeExcludePath;
+
+    switch (flag) {
+      case 'exclude': {
+        const excludePaths = await fg([path.resolve(pathPattern)]);
+        stylePaths = stylePaths.filter(sp => !excludePaths.includes(sp));
+        break;
+      }
+      case 'include': {
+        const includePaths = await fg([path.resolve(pathPattern)]);
+        stylePaths = [...new Set(stylePaths.concat(includePaths))];
+        break;
+      }
+      default: {
+      }
+    }
+  }
 
   let usedContext = new Set();
   let unusedContext = new Set();
@@ -95,6 +128,20 @@ const buildStyles = async (styleDir, layerDir, outputDir, options = {}) => {
   console.log('');
 };
 
+const rawArgs = process.argv;
+
+// We need to use the raw arguments here to get the order correct
+const includeExcludeArgs = rawArgs
+  .filter(c => c.startsWith('--include') || c.startsWith('--exclude'))
+  .map(c => {
+    let [flag, pathPattern] = c.split('=');
+    flag = flag.replaceAll('--', '');
+    return { flag, pathPattern };
+  });
+
 const { styleDir, layerDir, outDir, verbose } = argv;
 
-buildStyles(styleDir, layerDir, outDir, { verbose });
+buildStyles(styleDir, layerDir, outDir, {
+  verbose,
+  includeExcludePaths: includeExcludeArgs
+});

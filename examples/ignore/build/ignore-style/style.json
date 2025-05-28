@@ -1,0 +1,36 @@
+{
+  "version": 8,
+  "name": "ignore",
+  "sources": {
+    "Example": {"type": "vector", "url": "https://example.com/source.json"}
+  },
+  "sprite": "https://example.com/sprites/sprite",
+  "glyphs": "https://example.com/{fontstack}/{range}.pbf",
+  "layers": [
+    {
+      "id": "land",
+      "type": "background",
+      "paint": {
+        "background-color": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          8,
+          "red",
+          16,
+          "blue"
+        ]
+      }
+    },
+    {
+      "id": "road",
+      "type": "line",
+      "source": "Example",
+      "source-layer": "roads",
+      "minzoom": 16,
+      "layout": {"line-cap": "round", "line-join": "round"},
+      "paint": {"line-color": "green", "line-width": 5}
+    }
+  ],
+  "id": "example-simple"
+}
