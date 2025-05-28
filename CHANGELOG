@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 0.7.0
+
+- Add `--include` and `--exclude` flags
+
 ## 0.6.0
 
 - Warn on unused variables
