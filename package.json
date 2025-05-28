@@ -1,6 +1,6 @@
 {
   "name": "mapbox-gl-style-build",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Build Mapbox GL styles by composing layers",
   "source": "src/index.js",
   "main": "dist/main.js",
