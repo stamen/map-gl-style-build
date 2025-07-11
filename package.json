@@ -1,5 +1,5 @@
 {
-  "name": "mapbox-gl-style-build",
+  "name": "map-gl-style-build",
   "version": "0.7.0",
   "description": "Build Mapbox GL styles by composing layers",
   "source": "src/index.js",
@@ -38,7 +38,7 @@
     "parcel": "2.6.0"
   },
   "bin": {
-    "mapbox-gl-style-build": "bin/mapbox-gl-style-build",
+    "map-gl-style-build": "bin/map-gl-style-build",
     "create-layer-templates": "bin/create-layer-templates"
   }
 }
