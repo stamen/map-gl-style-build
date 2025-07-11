@@ -1,7 +1,7 @@
 {
   "name": "map-gl-style-build",
   "version": "0.7.0",
-  "description": "Build Mapbox GL styles by composing layers",
+  "description": "Build vector map styles by composing layers",
   "source": "src/index.js",
   "main": "dist/main.js",
   "module": "dist/module.js",
