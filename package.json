@@ -1,7 +1,7 @@
 {
-  "name": "mapbox-gl-style-build",
+  "name": "map-gl-style-build",
   "version": "0.7.0",
-  "description": "Build Mapbox GL styles by composing layers",
+  "description": "Build vector map styles by composing layers",
   "source": "src/index.js",
   "main": "dist/main.js",
   "module": "dist/module.js",
@@ -26,7 +26,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.isempty": "^4.4.0",
     "lodash.isplainobject": "^4.0.6",
-    "mapbox-gl-style-format": "github:stamen/mapbox-gl-style-format#v0.3.0",
+    "map-gl-style-format": "github:stamen/map-gl-style-format#v0.3.0",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -38,7 +38,7 @@
     "parcel": "2.6.0"
   },
   "bin": {
-    "mapbox-gl-style-build": "bin/mapbox-gl-style-build",
+    "map-gl-style-build": "bin/map-gl-style-build",
     "create-layer-templates": "bin/create-layer-templates"
   }
 }
