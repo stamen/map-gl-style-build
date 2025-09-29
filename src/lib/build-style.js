@@ -2,9 +2,6 @@
 import fs from 'fs';
 import path from 'path';
 import chalk from 'chalk';
-import cloneDeep from 'lodash.clonedeep';
-import isPlainObject from 'lodash.isplainobject';
-import { removeEmpty, deleteProp } from './primitive-utils';
 import { mergeOverrides } from './merge-overrides';
 
 /**
@@ -267,16 +264,6 @@ export const buildStyle = (name, absoluteStylePath, layerDir, options = {}) => {
     console.warn(`Found issues in style ${chalk.blue(name)}:`);
     logLayerValidationMessages(validationMessages);
   }
-
-  // Flattens nested object to be one level with keys using periods to represent nesting
-  const flattenObject = (obj, prefix = '') =>
-    Object.keys(obj).reduce((acc, k) => {
-      const pre = prefix.length ? prefix + '.' : '';
-      if (isPlainObject(obj[k]))
-        Object.assign(acc, flattenObject(obj[k], pre + k));
-      else acc[pre + k] = obj[k];
-      return acc;
-    }, {});
 
   return { styleJson };
 };
