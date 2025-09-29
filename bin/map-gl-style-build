@@ -80,8 +80,6 @@ const buildStyles = async (styleDir, layerDir, outputDir, options = {}) => {
     }
   }
 
-  let usedContext = new Set();
-  let unusedContext = new Set();
   stylePaths.forEach(absoluteStylePath => {
     const relativePath = path.relative(styleDir, absoluteStylePath);
     const { dir, name } = path.parse(relativePath);
@@ -93,16 +91,13 @@ const buildStyles = async (styleDir, layerDir, outputDir, options = {}) => {
 
     try {
       // Passing in the relativePath as the style name so users can easily find issues
-      let {
-        styleJson: builtStyle,
-        unusedContextPaths,
-        usedContextPaths
-      } = buildStyle(relativePath, absoluteStylePath, layerDir, options);
+      let { styleJson: builtStyle } = buildStyle(
+        relativePath,
+        absoluteStylePath,
+        layerDir,
+        options
+      );
       builtStyle = format(builtStyle);
-
-      usedContextPaths.forEach(p => usedContext.add(p));
-
-      unusedContextPaths.forEach(p => unusedContext.add(p));
 
       fs.writeFileSync(path.resolve(styleOutputDir, 'style.json'), builtStyle);
     } catch (e) {
@@ -111,18 +106,6 @@ const buildStyles = async (styleDir, layerDir, outputDir, options = {}) => {
       console.error(e.message);
       process.exit(1);
     }
-  });
-
-  const neverUsedVars = [...unusedContext].filter(
-    path => !usedContext.has(path)
-  );
-
-  if (neverUsedVars.length) {
-    console.warn('Style built with the following warnings:');
-  }
-  neverUsedVars.forEach(unusedVar => {
-    console.warn(`  Unused context variable ${chalk.blue(unusedVar)} found:`);
-    console.warn(`    This variable is not used in any style variant.`);
   });
 
   console.log('');

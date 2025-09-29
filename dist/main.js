@@ -436,18 +436,13 @@ function $787eebfbd67e2373$var$_typeof(obj1) {
  */ var $787eebfbd67e2373$var$buildLayer = function buildLayer(context, name, path) {
     var builder = $787eebfbd67e2373$var$loadLayerBuilder(name, path);
     var layer;
-    var contextMatches;
     try {
-        var _fileStr$match;
         layer = builder(context);
-        var fileStr = $787eebfbd67e2373$var$_fs["default"].readFileSync(path, "utf8");
-        contextMatches = (_fileStr$match = fileStr.match(/context(?:\.\w+)+/g)) !== null && _fileStr$match !== void 0 ? _fileStr$match : [];
     } catch (error) {
         throw new Error($787eebfbd67e2373$var$getLayerBuildErrorMessage(error, name, path));
     }
     return {
-        layer: (0, $7c018e715e9e5e4a$exports.mergeOverrides)(layer.baseStyle, layer.overrides),
-        usedContext: contextMatches
+        layer: (0, $7c018e715e9e5e4a$exports.mergeOverrides)(layer.baseStyle, layer.overrides)
     };
 };
 /**
@@ -467,28 +462,15 @@ function $787eebfbd67e2373$var$_typeof(obj1) {
     var styleJson = JSON.parse(JSON.stringify(template));
     var validationMessages = {};
     if (verbose) console.log("Building style ".concat($787eebfbd67e2373$var$_chalk["default"].blue(name)));
-    var unusedContext = (0, $787eebfbd67e2373$var$_lodash["default"])(context);
-    var usedContextPaths = [];
     styleJson.layers = template.layers.map(function(layerName) {
         if (verbose) console.log("  Adding layer ".concat($787eebfbd67e2373$var$_chalk["default"].blue(layerName)));
         var layerPath = $787eebfbd67e2373$var$_path["default"].resolve(layerDir, "".concat(layerName, ".js"));
-        var _buildLayer = $787eebfbd67e2373$var$buildLayer(context, layerName, layerPath), layer = _buildLayer.layer, usedContext = _buildLayer.usedContext;
-        // Create path strings of used context
-        usedContextPaths = usedContextPaths.concat((0, $787eebfbd67e2373$var$_lodash["default"])(usedContext).map(function(str) {
-            return str.split(".").slice(1).join(".");
-        }));
-        // Use used context to filter context down to what is not used
-        usedContext.map(function(str) {
-            return str.split(".").slice(1);
-        }).forEach(function(contextPath) {
-            unusedContext = (0, $8e6a350f8ed2b618$exports.deleteProp)(unusedContext, contextPath);
-        });
+        var _buildLayer = $787eebfbd67e2373$var$buildLayer(context, layerName, layerPath), layer = _buildLayer.layer;
         // Collect validation messages for each layer
         var layerValidationMessages = $787eebfbd67e2373$var$validateLayer(layer);
         if (layerValidationMessages.length) validationMessages[layerName] = layerValidationMessages;
         return layer;
     });
-    unusedContext = (0, $8e6a350f8ed2b618$exports.removeEmpty)(unusedContext);
     if (Object.keys(validationMessages).length > 0) {
         console.warn("Found issues in style ".concat($787eebfbd67e2373$var$_chalk["default"].blue(name), ":"));
         $787eebfbd67e2373$var$logLayerValidationMessages(validationMessages);
@@ -503,11 +485,8 @@ function $787eebfbd67e2373$var$_typeof(obj1) {
             return acc;
         }, {});
     };
-    var unusedContextPaths = Object.keys(flattenObject1(unusedContext));
     return {
-        styleJson: styleJson,
-        unusedContextPaths: unusedContextPaths,
-        usedContextPaths: usedContextPaths
+        styleJson: styleJson
     };
 };
 $787eebfbd67e2373$exports.buildStyle = $787eebfbd67e2373$var$buildStyle;

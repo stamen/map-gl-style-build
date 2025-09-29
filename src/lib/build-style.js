@@ -204,18 +204,14 @@ const buildLayer = (context, name, path) => {
   const builder = loadLayerBuilder(name, path);
 
   let layer;
-  let contextMatches;
   try {
     layer = builder(context);
-    const fileStr = fs.readFileSync(path, 'utf8');
-    contextMatches = fileStr.match(/context(?:\.\w+)+/g) ?? [];
   } catch (error) {
     throw new Error(getLayerBuildErrorMessage(error, name, path));
   }
 
   return {
-    layer: mergeOverrides(layer.baseStyle, layer.overrides),
-    usedContext: contextMatches
+    layer: mergeOverrides(layer.baseStyle, layer.overrides)
   };
 };
 
@@ -250,28 +246,13 @@ export const buildStyle = (name, absoluteStylePath, layerDir, options = {}) => {
     console.log(`Building style ${chalk.blue(name)}`);
   }
 
-  let unusedContext = cloneDeep(context);
-  let usedContextPaths = [];
-
   styleJson.layers = template.layers.map(layerName => {
     if (verbose) {
       console.log(`  Adding layer ${chalk.blue(layerName)}`);
     }
 
     const layerPath = path.resolve(layerDir, `${layerName}.js`);
-    const { layer, usedContext } = buildLayer(context, layerName, layerPath);
-
-    // Create path strings of used context
-    usedContextPaths = usedContextPaths.concat(
-      cloneDeep(usedContext).map(str => str.split('.').slice(1).join('.'))
-    );
-
-    // Use used context to filter context down to what is not used
-    usedContext
-      .map(str => str.split('.').slice(1))
-      .forEach(contextPath => {
-        unusedContext = deleteProp(unusedContext, contextPath);
-      });
+    const { layer } = buildLayer(context, layerName, layerPath);
 
     // Collect validation messages for each layer
     const layerValidationMessages = validateLayer(layer);
@@ -281,8 +262,6 @@ export const buildStyle = (name, absoluteStylePath, layerDir, options = {}) => {
 
     return layer;
   });
-
-  unusedContext = removeEmpty(unusedContext);
 
   if (Object.keys(validationMessages).length > 0) {
     console.warn(`Found issues in style ${chalk.blue(name)}:`);
@@ -299,7 +278,5 @@ export const buildStyle = (name, absoluteStylePath, layerDir, options = {}) => {
       return acc;
     }, {});
 
-  const unusedContextPaths = Object.keys(flattenObject(unusedContext));
-
-  return { styleJson, unusedContextPaths, usedContextPaths };
+  return { styleJson };
 };
