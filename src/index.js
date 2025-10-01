@@ -1,4 +1,5 @@
 import { buildStyle } from './lib/build-style';
+import { buildStyles } from './lib/build-styles';
 import { mergeOverrides } from './lib/merge-overrides';
 import { mergeVariables } from './lib/merge-variables';
 import { modifyNumberVariables } from './lib/modify-number-variables';
@@ -13,5 +14,6 @@ export {
   mergeVariables,
   modifyNumberVariables,
   createLayerTemplate,
-  createVariantTemplate
+  createVariantTemplate,
+  buildStyles
 };
