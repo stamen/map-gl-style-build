@@ -498,7 +498,7 @@ If you want to contribute to the tool itself:
 
 ```bash
 # Clone the repository
-git clone https://github.com/mizmay/map-gl-style-build.git
+git clone https://github.com/stamen/map-gl-style-build.git
 cd map-gl-style-build
 
 # Install dependencies
@@ -538,5 +538,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 - **Documentation**: See [INSTALLATION](INSTALLATION.md) for detailed setup instructions
 - **Examples**: Check the `examples/` directory
-- **Issues**: [GitHub Issues](https://github.com/mizmay/map-gl-style-build/issues)
+- **Issues**: [GitHub Issues](https://github.com/stamen/map-gl-style-build/issues)
 
