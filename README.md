@@ -1,234 +1,501 @@
 # Map GL Style Build
 
-Build [MapLibre GL styles](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers.
+A build system for [Mapbox GL](https://docs.mapbox.com/mapbox-gl-js/style-spec/) and [Maplibre GL](https://maplibre.org/maplibre-style-spec) styles that enables modular, maintainable map styling through layer composition and template-based development.
 
-A build system lets you more easily maintain stylesheet variations by removing the need to make duplicative changes across multiple stylesheets.
+## What This Tool Does
 
-## Usage
+Instead of maintaining massive JSON stylesheets, `map-gl-style-build` lets you:
 
-### Style definition
+- **Break stylesheets into manageable layer files** - Each map layer becomes its own JavaScript module
+- **Create style variants easily** - Define multiple styles by composing layers with different contexts
+- **Work iteratively** - Make changes to individual layers and rebuild instantly
+- **Maintain consistency** - Share common styling logic across multiple map styles
+- **Version control effectively** - Track changes at the layer level, not the entire stylesheet
 
-This script assumes you have two directories:
+## Quick Start
 
-1.  The **styles** directory, which contains each style you want to build. Each style is defined as a JS module that exports two plain JS objects:
-    1. `context`: The variables this style defines that will be passed to layers during the build
-    2. `template`: The style, which is a [MapLibre GL style](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
-2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from the style. The function
-    must return two objects:
-    1. `baseStyle`: The base style object
-    2. `overrides`: Any overrides for to the `baseStyle`, may be an empty object if no overrides are necessary
-
-See the `examples` directory for examples.
-
-### Using the script
-
-Once installed using your package manager:
+If you're familiar with Node.js, npm/yarn, and map styling, run these commands in your map project directory (not in this repository).
 
 ```bash
-map-gl-style-build
-    --style-dir=templates/styles
-    --layer-dir=templates/layers
-    --out-dir=build
+# Install the tool in your map project directory
+yarn add map-gl-style-build@https://github.com/mizmay/map-gl-style-build
 ```
 
-The parameters are as follows:
+### For Everyone Else
 
-- `--style-dir`: the style directory as defined above
-- `--layer-dir`: the layer directory as defined above
-- `--out-dir`: the directory built styles will be placed within
-- `--exclude`: optional glob pattern or file path specifying files to exclude from included files
-- `--include`: optional glob pattern or file path specifying files to include if varying from `style-dir` and `layer-dir`
-- `-v`: include for verbose output
+If you want to use this tool for maintaining map styles, but need a more detailed explanation, see [INSTALLATION](INSTALLATION.md) for detailed setup instructions.
 
-#### `--include` and `--exclude`
+## Typical Commands
 
-Note that the `include` and `exclude` flags can be repeated and order is relevant.
+```bash
+# Basic build
+yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build
 
-For example, if we have a file structure like:
+# Verbose output
+yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build -v
 
-- `styles /`
-  - `style-1.js`
-  - `style-2.js`
-  - `navigation /`
-    - `nav-style-1.js`
-    - `nav-style-2.js`
-
-Then the following command
-
-```
-map-gl-style-build
-    --style-dir=styles
-    --layer-dir=...
-    --out-dir=...
-    --exclude=styles/navigation/*
-    --include=styles/navigation/nav-style-2.js
+# Convert existing stylesheet
+yarn create-layer-templates --in-dir=styles --out-dir=templates --base-style-path=styles/main.json
 ```
 
-would first ignore the `navigation` directory, but then explicitly include `nav-style-2.js`.
+**Note:** Some preparation is required before running these commands. See [Building From Scratch](#building-from-scratch) or [Converting Existing Stylesheets](#converting-existing-stylesheets) sections below for setup instructions.
 
-Alternatively, switching the order of those would have the same effect as not using the `include` flag
+### Converting Existing Stylesheets (Recommended)
+
+If you already have Mapbox GL or Maplibre GL style JSON files, you can convert them into the template structure using the built-in conversion tool.
+
+### Step 1: Prepare Your Styles
+
+1. **Organize your existing stylesheets** in a directory (e.g., `original_styles/`)
+2. **Identify your base style** - if you have multiple related stylesheets, identify the one that will serve as the foundation for others
+3. **Audit for consistency** - if you have multiple related stylesheets, ensure layers that represent the same features have matching `id`, `type`, and `source` fields across stylesheets
+
+### Step 2: Convert to Templates
+
+Use the `create-layer-templates` command to break your stylesheets into manageable files:
+
+```bash
+yarn create-layer-templates \
+  --in-dir=original_styles \
+  --out-dir=templates \
+  --base-style-path=original_styles/main-style.json
+```
+
+**Parameters:**
+- `--in-dir`: Directory containing your existing style JSON files
+- `--out-dir`: Directory where template files will be created
+- `--base-style-path`: Path to your base/reference style file
+
+**Directory Structure Flexibility:** The folder and file names in the project structure can be renamed to match your project's conventions without impacting functionality. For example, you could use `themes` instead of `styles`, `components` instead of `layers`, or `output` instead of `build`. Just update the corresponding command parameters accordingly within your project directory, and note the differences when consulting further in this documentation.
+
+### Step 3: Review Generated Structure
+
+After conversion, you'll find:
 
 ```
-map-gl-style-build
-    --style-dir=styles
-    --layer-dir=...
-    --out-dir=...
-    --include=styles/navigation/nav-style-2.js
-    --exclude=styles/navigation/*
+templates/
+├── layers/              # Individual layer definitions
+│   ├── roads.js
+│   ├── buildings.js
+│   └── labels.js
+└── styles/             # Style variants
+    ├── main-style.js
+    └── alternative-style.js
 ```
 
-as in this scenario, we first explicitly include `nav-style-2.js` (it would have been included anyway, but using this for the sake of a simple example), then we'd exclude the entire `navigation` directory which includes that style. This means the built styles would include no `navigation` styles at all.
+**Key points:**
+- Each layer becomes a separate JavaScript file in `templates/layers/`
+- Each style variant gets a file in `templates/styles/`
+- The `context` section contains variables that can eliminate repetitive overrides
+- Look for opportunities to create shared variables for colors, line widths, dash patterns, zoom-based interpolations, opacity values, font sizes, and data sources
 
-### Helper functions
+### Step 4: Organize Variables (Optional)
 
-As a module, this library also exports two helper functions:
+After conversion, you can organize variables to improve maintainability. This step is optional but recommended for complex styles. See the [Defining Style Variables](#defining-style-variables) section in Building From Scratch for explanations of how to organize variables.
 
-**`mergeOverrides`:**
-Merges overrides with a base style or other overrides. Typically you can rely on `map-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
+### Step 5: Test your build system
 
-_Example:_
+```bash
+yarn map-gl-style-build \
+  --style-dir=templates/styles \
+  --layer-dir=templates/layers \
+  --out-dir=build
+```
 
-```js
-// layer-template.js
-const { mergeOverrides } = require('map-gl-style-build');
+Compare the generated stylesheets in `build/` with your original files to ensure they match.
 
-module.exports.default = context => {
-  let baseStyle = {
-    id: 'example-layer',
-    type: 'fill',
+### Troubleshooting Conversion
+
+**Common issues:**
+- **Missing layers**: Check that all layers from your original styles are present in the templates
+- **Incorrect styling**: Verify that layer IDs, types, and sources match between variants
+- **Missing sources**: Ensure all data sources are defined in your style templates
+
+## Cartographic Workflow
+
+### 1. Iterative Changes
+
+Use your favorite text editor to make changes to individual layer files, then rebuild:
+
+```bash
+# Make changes to templates/layers/roads.js
+# Then rebuild
+yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build
+
+# Preview changes locally
+yarn preview  # (if configured in package.json)
+```
+
+### 2. Adding New Layers
+
+1. Create a new layer file in `templates/layers/`
+2. Add the layer name to your style variant's `layers` array
+3. Rebuild to see the changes
+
+### 3. Creating Style Variants
+
+1. Create a new style file in `templates/styles/`
+2. Define your `context` and `template` objects
+3. Rebuild to generate the new variant
+
+## Building From Scratch
+
+If you're starting with no existing stylesheets, this section explains how to create the template structure manually.
+
+### Project Structure
+
+The build system organizes layer definitions as individual template files, making them easier to edit directly, track in source control, or use with external style editors. You can also define variables and give them different values by creating style variants.
+
+A simple build command exports a stylesheet for each variant, which you can reference in your Maplibre or Mapbox map.
+
+### Layer Templates
+
+The foundation of this system is the layer template - a JavaScript module that defines how a single map layer should be styled. Each layer template exports a function that receives a `context` object containing variables and returns two objects: `baseStyle` and `overrides`.
+
+#### Basic Structure
+
+```javascript
+// templates/layers/roads.js
+module.exports = (context) => {
+  const baseStyle = {
+    id: 'roads',
+    type: 'line',
+    source: context.roadSource,
     paint: {
-      'fill-color': 'green'
+      'line-color': context.theme.colors.roads,
+      'line-width': context.layout.iconSize
     }
   };
 
-  let overrides = {};
-
-  if ((context.rootSource = 'source1')) {
-    overrides = mergeOverrides(overrides, {
-      paint: {
-        'fill-color': 'red'
-      }
-    });
+  const overrides = {};
+  
+  // Conditional styling based on context
+  if (context.styleName === 'dark-theme') {
+    overrides.paint = {
+      'line-color': context.theme.colors.roads
+    };
   }
 
-  if ((context.colorMode = 'dark')) {
-    // Add overrides to the existing overrides, if any.
-    //
-    // In thise case, only fill-opacity is added to the paint object, all other properties remain
-    overrides = mergeOverrides(overrides, {
-      paint: {
-        'fill-opacity': 0.2
-      }
-    });
+  return { baseStyle, overrides };
+};
+```
+
+### Styles
+
+Once you have a set of layer templates, you can organize them into a complete map style, or a set of related map styles. You create style files manually in the `templates/styles/` directory - these define the context (variables) and layer order for each style variant. 
+
+#### Required Structure
+
+Styles define the context (variables) and layer order. Each variant file must export two objects: `context` and `template`. Every style file must follow this structure:
+
+```javascript
+// templates/styles/My_Style.js
+module.exports.context = {
+  // Variables available to layers
+  theme: { /* ... */ },
+  layout: { /* ... */ }
+};
+
+module.exports.template = {
+  version: 8,
+  name: "My Style Name",
+  sources: { /* ... */ },
+  layers: [ /* ... */ ]
+};
+```
+
+#### Context Requirements
+
+The `context` object contains variables that layers can reference. Each variable file must be declared using `require()`:
+
+```javascript
+// For separate variable files
+const theme = require('../variables/theme');
+const layout = require('../variables/layout');
+
+module.exports.context = {
+  theme: theme.light,
+  layout: layout.light
+};
+
+// For embedded variables
+module.exports.context = {
+  theme: {
+    colors: { roads: '#666', buildings: '#ccc' },
+    fonts: { labelFont: ["Noto Sans Regular"] }
+  },
+  layout: {
+    iconSize: ["interpolate", ["linear"], ["zoom"], 11, 0.7, 16, 1],
+    textPadding: 2
   }
 };
 ```
 
-**`mergeVariables`:**
-Merges a variables object with an extender object to override variable values.
+#### Template Requirements
 
-_Example:_
+The `template` object defines the complete style specification:
 
-```js
- // style-template.js
- const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
+- **`sources`**: All data sources must be declared here
+- **`layers`**: Array of layer names that controls render order (z-order)
 
- const textSizes = require('../variables/textSizes');
+The `layers` array is crucial - it determines the order layers appear in the final `style.json`, which controls the visual stacking order on the map. Layers listed first render behind layers listed later.
 
- module.exports.context = {
-   textSizes: mergeVariables(textSizes, { countryLabelSize: 16 }),
-   ...
- };
+### Build
+
+When you run the build command, it processes these style files and generates the final `style.json` files in your `build/` directory.
+
+```
+your-project/
+├── templates/
+│   ├── layers/           # Individual layer definitions
+│   │   ├── roads.js
+│   │   ├── buildings.js
+│   │   └── labels.js
+│   └── styles/        # Single style file with embedded variables
+│       └── My_Map.js
+└── build/               # Generated stylesheet
+    └── My_Map/
+        └── style.json
 ```
 
-**`modifyNumberVariables`:**
-Takes a variable or object specifying variables and applies a math function to the values. Expression values have the math function applied to all outputs within the expression.
+### Defining Style Variables
 
-Supports the following operations:
+One of the greatest benefits of this build system is that it allows you to avoid repetitive stylesheet declarations by using variables instead. There are multiple approaches for defining variables: through overrides within an individual layer file, by adding context definitions in the style file itself, or by defining variables across the style or style variants in a separate directory. With each approach, when the style is built, these variables resolve across all layers. We recommend you choose an approach that makes it easy to maintain a consistent design system and update themes globally.
 
-- `*`: multiplication
-- `/`: division
-- `+`: addition
-- `-`: subtraction
+#### Using Overrides
 
-Also added support for passing optional options object to round the modified value in different ways:
+This approach is useful when you have specific conditional styling that doesn't warrant the additional complexity of creating variables across styles or style variants.
 
-- `floor`: boolean
-- `ceil`: boolean
-- `round`: boolean
-- `toFixed`: number
+You can use overrides for conditional styling:
 
-_Example:_
+```javascript
+// templates/layers/buildings.js
+module.exports = (context) => {
+  const baseStyle = {
+    id: 'buildings',
+    type: 'fill',
+    source: 'mapbox-streets',
+    paint: {
+      'fill-color': '#cccccc',
+      'fill-opacity': 0.8
+    }
+  };
 
-```js
- // style-template.js
- const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
+  const overrides = {};
+  
+  // Override for dark theme
+  if (context.styleName === 'dark-theme') {
+    overrides.paint = {
+      'fill-color': '#333333',
+      'fill-opacity': 0.9
+    };
+  }
+  
+  // Override for high contrast mode
+  if (context.highContrast) {
+    overrides.paint = {
+      'fill-opacity': 1.0
+    };
+  }
 
- const textSizes = require('../variables/textSizes');
-
- module.exports.context = {
-   textSizes: modifyNumberVariables(textSizes, '*', 2, { round: true }),
-   ...
- };
+  return { baseStyle, overrides };
+};
 ```
 
-## Development
+#### Declaring Variables Separately
 
-1.  Clone this rep
-2.  `yarn install`
-3.  `yarn watch`
-4.  Edit files in `src/` and they will be built into `dist/`
+If you want to manage related styles across multiple maps, or create a manageable theme or design system, we recommend you create variable styling instead of managing overrides.
 
-## Implementation
+##### Single Map Style
 
-Implementation of the build system is most easily done with a combination of a provided script and manual work.
+For simple projects with one map style, you may choose to define all variables directly in the style file's context:
 
-Based on the prerequisite decisions about primary differentiators for variants, this script can do the initial work of:
+```javascript
+// templates/styles/My_Map.js
+module.exports.context = {
+  theme: {
+    colors: {
+      roads: 'rgb(143, 143, 143)',
+      buildings: 'rgb(204, 204, 204)',
+      labels: 'rgb(92, 92, 92)'
+    },
+    fonts: {
+      labelFont: ["Noto Sans Regular"],
+      iconFont: ["Noto Sans Bold"]
+    }
+  },
+  layout: {
+    iconSize: ["interpolate", ["linear"], ["zoom"], 11, 0.7, 16, 1, 18, 1.5],
+    labelFontSize: ["interpolate", ["exponential", 0.7], ["zoom"], 13, 11, 16, 12, 18, 14],
+    textPadding: 2,
+    haloWidth: 1
+  }
+};
 
-- Breaking existing styles out into the style template and layer JS files
-- Imposing a file structure on the repo
+module.exports.template = {
+  version: 8,
+  name: "My_Map",
+  sources: { /* ... */ },
+  layers: [ /* ... */ ]
+};
+```
+
+This approach is simpler but less maintainable for complex styles with many shared values. Thus even for a project with a single map style, you may choose to define variables in a separate directory and import them when building your styles.
+
+```
+your-project/
+├── templates/
+│   ├── layers/           # Individual layer definitions
+│   │   ├── roads.js
+│   │   ├── buildings.js
+│   │   └── labels.js
+│   ├── styles/
+│   │   └── My_Map.js
+│   └── variables/       # Shared variables
+│       ├── theme.js
+│       └── layout.js
+└── build/               # Generated stylesheet
+    └── My_Map/
+        └── style.json
+```
+
+##### Multiple Style Variants
+
+For multiple related styles, your best option is to organize shared variables in separate files:
+
+```
+your-project/
+├── templates/
+│   ├── layers/           # Individual layer definitions
+│   │   ├── roads.js
+│   │   ├── buildings.js
+│   │   └── labels.js
+│   ├── styles/        # Style variants
+│   │   ├── light-theme.js
+│   │   └── dark-theme.js
+│   └── variables/       # Shared variables
+│       ├── theme.js
+│       └── layout.js
+└── build/               # Generated stylesheets
+    ├── light-theme/
+    │   └── style.json
+    └── dark-theme/
+        └── style.json
+```
+
+## Advanced Features
+
+### Helper Functions
+
+The tool provides several utility functions for complex styling scenarios:
+
+#### `mergeOverrides`
+Combine multiple override objects:
+
+```javascript
+const { mergeOverrides } = require('map-gl-style-build');
+
+// Merge conditional overrides
+let overrides = {};
+if (context.theme === 'dark') {
+  overrides = mergeOverrides(overrides, { paint: { 'fill-color': '#000' } });
+}
+if (context.highContrast) {
+  overrides = mergeOverrides(overrides, { paint: { 'fill-opacity': 1 } });
+}
+```
+
+#### `mergeVariables`
+Override variable values:
+
+```javascript
+const { mergeVariables } = require('map-gl-style-build');
+const defaultTheme = require('../variables/theme');
+const defaultLayout = require('../variables/layout');
+
+module.exports.context = {
+  theme: mergeVariables(defaultTheme.light, { 
+    colors: { roads: '#ff0000' },
+    fonts: { labelFont: ["Arial Bold"] }
+  }),
+  layout: mergeVariables(defaultLayout.light, {
+    iconSize: ["interpolate", ["linear"], ["zoom"], 11, 0.8, 16, 1.2],
+    textPadding: 3
+  })
+};
+```
+
+#### `modifyNumberVariables`
+Apply mathematical operations to numeric values:
+
+```javascript
+const { modifyNumberVariables } = require('map-gl-style-build');
+
+module.exports.context = {
+  // Double all text sizes
+  textSizes: modifyNumberVariables(textSizes, '*', 2),
+  
+  // Round to nearest integer
+  lineWidths: modifyNumberVariables(lineWidths, '*', 1.5, { round: true })
+};
+```
+
+## Examples
+
+Check out the `examples/` directory for complete working examples:
+
+- **`simple/`** - Basic single-style setup
+- **`shared-variables/`** - Using shared variables across styles
+- **`nested/`** - Complex nested directory structures
+- **`unused-context/`** - Handling unused context variables
+
+## Contributing to map-gl-style-build
+
+If you want to contribute to the tool itself:
+
+### Development Setup
 
 ```bash
-create-layer-templates
-    --in-dir=styles
-    --out-dir=templates
-    --base-style-path=styles/base-style.json
+# Clone the repository
+git clone https://github.com/mizmay/map-gl-style-build.git
+cd map-gl-style-build
+
+# Install dependencies
+yarn install
+
+# Start development mode
+yarn watch
 ```
 
-The parameters are as follows:
+### Project Structure
 
-- `--in-dir`: the style directory containing existing variant styles to break out into template files
-- `--out-dir`: the directory to build your template files to
-- `--base-style-path`: the name of the style in the "in-dir" that is the base style
+- `src/` - Source code
+- `bin/` - Command-line executables
+- `examples/` - Usage examples
+- `dist/` - Built output (generated)
 
-After running the implementation script, you may manually delete the initial styles directory unless reusing it for building the templates to. The script avoids this step as there may occasionally be reason to leave these pre-build-system styles for posterity.
+### Development Commands
 
-Before running your script or otherwise setting up the file structure in your repo, all style PRs should be merged and style work should stop until the new repo structure is merged.
+```bash
+yarn watch      # Watch for changes and rebuild
+yarn build      # Build for production
+yarn test       # Run tests
+```
 
-After merge, style work can begin again in parallel with further changes for the build system.
+### Making Changes
 
-Further changes to templates will be a manual process that includes:
+1. Edit files in `src/`
+2. Changes are automatically built to `dist/` when using `yarn watch`
+3. Test your changes with the examples
+4. Submit a pull request
 
-- Continuing to make style layers consistent
-- Finding common variables to use across layers
+## License
 
-### Prerequisites
+MIT License - see [LICENSE](LICENSE) file for details.
 
-To reap the greatest benefit of a build system, you should consider addressing some prerequisites first:
+## Support
 
-- Decide which styles will be built
-- Decide which style is the "base" or "default" style
-- Decide what the primary differentiators of your styles are to use for `context` in layers (can be style id if no larger grouping makes sense)
-- Keep layer ids for layers with the same styling/intention consistent across styles
-- Make layer styling consistent where it can be
+- **Documentation**: See [INSTALLATION](INSTALLATION.md) for detailed setup instructions
+- **Examples**: Check the `examples/` directory
+- **Issues**: [GitHub Issues](https://github.com/mizmay/map-gl-style-build/issues)
 
-### Workflow implications of build system
-
-After the build system is implemented, cartographers will no longer be able to make changes directly to a stylesheet. Instead all changes will be made directly to layer, variable, and style template files. These files will have to be built into output stylesheets via a command line tool provided by this library.
-
-This means cartographers will be unable to make direct changes in an editor like Maputnik. If an editor is used to test style changes, those changes will need to be implemented by hand afterwards.
-
-The build system will make certain large scale changes more difficult and others less difficult than editing stylesheets directly:
-
-- The inability to use an editor, needing to add new layer files, and making changes to a layer file that need to be accounted for in all of its overrides may increase friction for large style changes
-- The ability to make a change for all styles in one place and sharing common variables may decrease friction for other changes
