@@ -390,54 +390,92 @@ your-project/
 The tool provides several utility functions for complex styling scenarios:
 
 #### `mergeOverrides`
-Combine multiple override objects:
+Merges overrides with a base style or other overrides. Typically you can rely on `map-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
 
-```javascript
+_Example:_
+
+```js
+// layer-template.js
 const { mergeOverrides } = require('map-gl-style-build');
 
-// Merge conditional overrides
-let overrides = {};
-if (context.theme === 'dark') {
-  overrides = mergeOverrides(overrides, { paint: { 'fill-color': '#000' } });
-}
-if (context.highContrast) {
-  overrides = mergeOverrides(overrides, { paint: { 'fill-opacity': 1 } });
-}
+module.exports.default = context => {
+  let baseStyle = {
+    id: 'example-layer',
+    type: 'fill',
+    paint: {
+      'fill-color': 'green'
+    }
+  };
+
+  let overrides = {};
+
+  if ((context.rootSource = 'source1')) {
+    overrides = mergeOverrides(overrides, {
+      paint: {
+        'fill-color': 'red'
+      }
+    });
+  }
+
+  if ((context.colorMode = 'dark')) {
+    // Add overrides to the existing overrides, if any.
+    //
+    // In thise case, only fill-opacity is added to the paint object, all other properties remain
+    overrides = mergeOverrides(overrides, {
+      paint: {
+        'fill-opacity': 0.2
+      }
+    });
+  }
+};
 ```
 
 #### `mergeVariables`
-Override variable values:
+Merges a variables object with an extender object to override variable values.
 
-```javascript
-const { mergeVariables } = require('map-gl-style-build');
-const defaultTheme = require('../variables/theme');
-const defaultLayout = require('../variables/layout');
+_Example:_
 
-module.exports.context = {
-  theme: mergeVariables(defaultTheme.light, { 
-    colors: { roads: '#ff0000' },
-    fonts: { labelFont: ["Arial Bold"] }
-  }),
-  layout: mergeVariables(defaultLayout.light, {
-    iconSize: ["interpolate", ["linear"], ["zoom"], 11, 0.8, 16, 1.2],
-    textPadding: 3
-  })
-};
+```js
+ // style-template.js
+ const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
+
+ const textSizes = require('../variables/textSizes');
+
+ module.exports.context = {
+   textSizes: mergeVariables(textSizes, { countryLabelSize: 16 }),
+   ...
+ };
 ```
 
 #### `modifyNumberVariables`
-Apply mathematical operations to numeric values:
+Takes a variable or object specifying variables and applies a math function to the values. Expression values have the math function applied to all outputs within the expression.
 
-```javascript
-const { modifyNumberVariables } = require('map-gl-style-build');
+Supports the following operations:
 
-module.exports.context = {
-  // Double all text sizes
-  textSizes: modifyNumberVariables(textSizes, '*', 2),
-  
-  // Round to nearest integer
-  lineWidths: modifyNumberVariables(lineWidths, '*', 1.5, { round: true })
-};
+- `*`: multiplication
+- `/`: division
+- `+`: addition
+- `-`: subtraction
+
+Also added support for passing optional options object to round the modified value in different ways:
+
+- `floor`: boolean
+- `ceil`: boolean
+- `round`: boolean
+- `toFixed`: number
+
+_Example:_
+
+```js
+ // style-template.js
+ const { mergeVariables, modifyNumberVariables } = require('map-gl-style-build');
+
+ const textSizes = require('../variables/textSizes');
+
+ module.exports.context = {
+   textSizes: modifyNumberVariables(textSizes, '*', 2, { round: true }),
+   ...
+ };
 ```
 
 ## Examples
@@ -469,7 +507,7 @@ yarn watch
 
 ### Project Structure
 
-- `src/` - Source code
+- `src/` - Source code index and libraries
 - `bin/` - Command-line executables
 - `examples/` - Usage examples
 - `dist/` - Built output (generated)
