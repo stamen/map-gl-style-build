@@ -18,7 +18,7 @@ If you're familiar with Node.js, npm/yarn, and map styling, run these commands i
 
 ```bash
 # Install the tool in your map project directory
-yarn add map-gl-style-build@https://github.com/mizmay/map-gl-style-build
+yarn add map-gl-style-build@https://github.com/stamen/map-gl-style-build
 ```
 
 ### For Everyone Else
@@ -472,10 +472,13 @@ _Example:_
 
  const textSizes = require('../variables/textSizes');
 
- module.exports.context = {
-   textSizes: modifyNumberVariables(textSizes, '*', 2, { round: true }),
-   ...
- };
+module.exports.context = {
+  // Double all text sizes
+  textSizes: modifyNumberVariables(textSizes, '*', 2),
+  
+  // Round to nearest integer
+  lineWidths: modifyNumberVariables(lineWidths, '*', 1.5, { round: true })
+};
 ```
 
 ## Examples

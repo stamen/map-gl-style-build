@@ -77,7 +77,7 @@ This creates a `package.json` file with default values.
 
 ```bash
 # Install the latest version from GitHub
-yarn add map-gl-style-build@https://github.com/mizmay/map-gl-style-build
+yarn add map-gl-style-build@https://github.com/stamen/map-gl-style-build
 ```
 
 ### 3. Verify Installation
@@ -144,7 +144,7 @@ Under scripts to your new `package.json` add or modify the `scripts` section bel
 {
   "packageManager": "yarn@4.9.1",
   "dependencies": {
-    "map-gl-style-build": "https://github.com/mizmay/map-gl-style-build"
+    "map-gl-style-build": "https://github.com/stamen/map-gl-style-build"
   },
   "scripts": {
     "build": "map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build",
@@ -199,5 +199,5 @@ For more details see the [README](README.md)
 
 - **Tool help:** `yarn map-gl-style-build --help`
 - **Create templates help:** `yarn create-layer-templates --help`
-- **GitHub repository:** [mizmay/map-gl-style-build](https://github.com/mizmay/map-gl-style-build)
+- **GitHub repository:** [stamen/map-gl-style-build](https://github.com/stamen/map-gl-style-build)
 
