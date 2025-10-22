@@ -83,14 +83,14 @@ for (const filePath of dirPaths) {
 const allStyles = variants.concat([baseStyle]);
 
 for (const style of allStyles) {
-  const variantsDir = `${outDir}/variants`;
-  if (!fs.existsSync(variantsDir)) {
-    fs.mkdirSync(variantsDir, { recursive: true });
+  const stylesDir = `${outDir}/styles`;
+  if (!fs.existsSync(stylesDir)) {
+    fs.mkdirSync(stylesDir, { recursive: true });
   }
 
   const fileContent = createVariantTemplate(style);
 
-  fs.writeFileSync(`${variantsDir}/${style.name}.js`, fileContent);
+  fs.writeFileSync(`${stylesDir}/${style.name}.js`, fileContent);
 }
 
 // Keep track of all created layers
