@@ -6,6 +6,11 @@ A build system lets you more easily maintain stylesheet variations by removing t
 
 This library itself is a compiler that turns your files into renderable JSON stylesheets. To use it effectively, it expects you to set up a specific directory and file structure. More on this below.
 
+### Who is this tool for?
+
+- Users who need to maintain multiple stylesheets that are variations on one another and contain redundant style definitions
+- Users who need to maintain a single stylesheet and prefer to work on layers in a more composable and maintainable way
+
 ## Usage
 
 ### File structure
@@ -15,8 +20,7 @@ This script assumes you have two directories (whose names can be customized if y
 1.  The **styles** directory, which contains each style you want to build. Each style is defined as a JS module that exports two plain JS objects:
     1. `context`: The variables this style defines that will be passed to layers during the build
     2. `template`: The style, which is a [MapLibre GL style](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
-2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from a given style file to customize the layer appropriately. The function
-    must return two objects:
+2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from a given style file to customize the layer appropriately. The function must return two objects:
     1. `baseStyle`: The base style object
     2. `overrides`: Any overrides for to the `baseStyle`, may be an empty object if no overrides are necessary
 
@@ -34,11 +38,11 @@ your-project/
         └── style.json
 ```
 
-See the `examples` directory in this repo for examples.
+See the [`examples`](./examples/) directory in this repo for examples. We recommend looking at [our `simple` example](./examples/simple) if you are new to the build system.
 
 ### Using the script
 
-Once installed using your package manager:
+Once installed using your package manager, you can run the compiler in Bash or Node JS:
 
 ```bash
 # Bash
@@ -138,7 +142,7 @@ build /
 
 ### Helper functions
 
-As a module, this library also exports two helper functions:
+As a JS module, this library also exports two helper functions:
 
 **`mergeOverrides`:**
 Merges overrides with a base style or other overrides. Typically you can rely on `map-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
@@ -229,12 +233,14 @@ _Example:_
  };
 ```
 
-## Development
+## Contributing
 
-1.  Clone this rep
+1.  Clone this repo
 2.  `yarn install`
 3.  `yarn watch`
 4.  Edit files in `src/` and they will be built into `dist/`
+5.  Add examples or tests if necessary
+6.  File a pull request
 
 ## Implementation
 
