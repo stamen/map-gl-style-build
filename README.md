@@ -1,34 +1,66 @@
 # Map GL Style Build
 
-Build [MapLibre GL styles](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers.
+Build [MapLibre GL styles](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL styles](https://docs.mapbox.com/mapbox-gl-js/style-spec/) by composing layers in shared JS files rather than in style JSONs.
 
 A build system lets you more easily maintain stylesheet variations by removing the need to make duplicative changes across multiple stylesheets.
 
+This library itself is a compiler that turns your files into renderable JSON stylesheets. To use it effectively, it expects you to set up a specific directory and file structure. More on this below.
+
 ## Usage
 
-### Style definition
+### File structure
 
-This script assumes you have two directories:
+This script assumes you have two directories (whose names can be customized if you choose):
 
 1.  The **styles** directory, which contains each style you want to build. Each style is defined as a JS module that exports two plain JS objects:
     1. `context`: The variables this style defines that will be passed to layers during the build
     2. `template`: The style, which is a [MapLibre GL style](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
-2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from the style. The function
+2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from a given style file to customize the layer appropriately. The function
     must return two objects:
     1. `baseStyle`: The base style object
     2. `overrides`: Any overrides for to the `baseStyle`, may be an empty object if no overrides are necessary
 
-See the `examples` directory for examples.
+```
+your-project/
+├── templates/
+│   ├── layers/           # Individual layer definitions
+│   │   ├── roads.js
+│   │   ├── buildings.js
+│   │   └── labels.js
+│   └── styles/        # Single style file with embedded variables
+│       └── My_Map.js
+└── build/               # Generated stylesheet
+    └── My_Map/
+        └── style.json
+```
+
+See the `examples` directory in this repo for examples.
 
 ### Using the script
 
 Once installed using your package manager:
 
 ```bash
+# Bash
 map-gl-style-build
     --style-dir=templates/styles
     --layer-dir=templates/layers
     --out-dir=build
+```
+
+```js
+// JavaScript
+import { buildStyles } from 'map-gl-style-build';
+
+const styleDir = 'templates/styles';
+const layerDir = 'templates/layers';
+const outDir = 'build';
+const options = {
+  includeExcludePaths: [],
+  verbose: false
+};
+
+buildStyles(styleDir, layerDir, outDir, options);
 ```
 
 The parameters are as follows:
@@ -42,42 +74,67 @@ The parameters are as follows:
 
 #### `--include` and `--exclude`
 
-Note that the `include` and `exclude` flags can be repeated and order is relevant.
+Note that the `include` and `exclude` flags can be repeated and **order is relevant**.
 
 For example, if we have a file structure like:
 
-- `styles /`
-  - `style-1.js`
-  - `style-2.js`
-  - `navigation /`
-    - `nav-style-1.js`
-    - `nav-style-2.js`
+```
+styles /
+├── style-1.js
+├── style-2.js
+└── navigation /
+    ├── nav-style-1.js
+    └── nav-style-2.js
+```
 
-Then the following command
+Then the following command would first ignore the `navigation` directory, but then explicitly include `nav-style-2.js` like the following:
+
+#### Command
+
+```
+map-gl-style-build
+    --style-dir=styles
+    --layer-dir=...
+    --out-dir=build
+    --exclude=styles/navigation/*
+    --include=styles/navigation/nav-style-2.js
+```
+
+#### Output
+
+```
+build /
+├── style-1 /
+│   └── style.json
+├── style-2 /
+│   └── style.json
+└── navigation /
+    └── nav-style-2/
+        └── style.json
+```
+
+Alternatively, switching the order of those would have the same effect as not using the `include` flag as in this scenario, we first explicitly include `nav-style-2.js` (it would have been included anyway, but using this for the sake of a simple example), then we'd exclude the entire `navigation` directory which includes that style. This means the built styles would include no `navigation` styles at all.
+
+#### Command
 
 ```
 map-gl-style-build
     --style-dir=styles
     --layer-dir=...
     --out-dir=...
-    --exclude=styles/navigation/*
-    --include=styles/navigation/nav-style-2.js
-```
-
-would first ignore the `navigation` directory, but then explicitly include `nav-style-2.js`.
-
-Alternatively, switching the order of those would have the same effect as not using the `include` flag
-
-```
-map-gl-style-build
-    --style-dir=styles
-    --layer-dir=...
-    --out-dir=...
     --include=styles/navigation/nav-style-2.js
     --exclude=styles/navigation/*
 ```
 
-as in this scenario, we first explicitly include `nav-style-2.js` (it would have been included anyway, but using this for the sake of a simple example), then we'd exclude the entire `navigation` directory which includes that style. This means the built styles would include no `navigation` styles at all.
+#### Output
+
+```
+build /
+├── style-1 /
+│   └── style.json
+└── style-2 /
+    └── style.json
+```
 
 ### Helper functions
 
