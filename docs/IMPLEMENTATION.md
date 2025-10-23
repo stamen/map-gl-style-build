@@ -5,6 +5,21 @@ Install:
 
 ## Setting up your file structure
 
+### Prerequisites
+
+To reap the greatest benefit of a build system, you should address some prerequisites first:
+
+- Decide which styles will be built
+- Decide which style is the "base style"
+  - "Base style" indicates the specific stylesheet that all _other_ styles will be considered variations off of
+- Decide what the primary differentiators of your styles are to use for `context` in layers (can be style id if no larger grouping makes sense)
+- Keep layer ids for layers with the same styling/intention consistent across styles
+- Make layer styling consistent where it can be
+
+Some of this can be addressed after setting up the file structure as well, but it's often easier to add consistency to start.
+
+### Creating layer templates
+
 This library contains a second bash script (`create-layer-templates`) to help turn initial stylesheets into the appropriate files/file format for use with the build system. Note that this script is only intended to be used once at the beginning of a project when implementing this system.
 
 Based on the prerequisite decisions about primary differentiators for variants, this script can do the initial work of:
@@ -25,25 +40,15 @@ The parameters are as follows:
 - `--out-dir`: the directory to build your template files to
 - `--base-style-path`: the name of the style in the "in-dir" that is the base style
 
-"Base style" indicates the specific stylesheet that all _other_ styles in the directory designated as `--in-dir` will be considered variations off of.
+`--base-style-path` indicates the specific stylesheet that all _other_ styles in the directory designated as `--in-dir` will be considered variations off of.
 
-After running the implementation script, you will see files similar to those in the `examples` directory for your project.
+After running the implementation script, you will see files in your project similar to those in the [`examples`](../examples/) directory here.
 
 You may manually delete the initial styles directory unless reusing it for building the templates to. The script avoids this step as there may occasionally be reason to archive these pre-build-system styles for posterity.
 
 Once these files are in place, you can point the build script at the appropriate directories to build as needed for your project.
 
-### Prerequisites
-
-To reap the greatest benefit of a build system, you should address some prerequisites first:
-
-- Decide which styles will be built
-- Decide which style is the "base" or "default" style
-- Decide what the primary differentiators of your styles are to use for `context` in layers (can be style id if no larger grouping makes sense)
-- Keep layer ids for layers with the same styling/intention consistent across styles
-- Make layer styling consistent where it can be
-
-#### Considerations when implementing
+### Considerations when implementing
 
 Before running the implementation script or otherwise setting up the file structure in your repo, all style PRs should be merged and any ongoing style work should stop until the new repo structure is merged. **Once the new file structure is set up, you will no longer be able to make changes directly to style JSON or incorporate previous pending changes to a style JSON.**
 
