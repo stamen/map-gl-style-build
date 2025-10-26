@@ -12,33 +12,48 @@ Instead of maintaining massive JSON stylesheets, `map-gl-style-build` lets you:
 - **Maintain consistency** - Share common styling logic across multiple map styles
 - **Version control effectively** - Track changes at the layer level, not the entire stylesheet
 
-## Quick Start
+## Who is this tool for?
 
-If you're familiar with Node.js, npm/yarn, and map styling, run these commands in your map project directory (not in this repository).
+- Users who need to maintain multiple stylesheets that are variations on one another and contain redundant style definitions
+- Users who need to maintain a single stylesheet and prefer to work on layers in a more composable and maintainable way
+
+This library is a compiler that turns your files into renderable JSON stylesheets. To use it effectively, it expects you to set up a specific directory and file structure. More on this below.
+
+## Installation
 
 ```bash
 # Install the tool in your map project directory
 yarn add map-gl-style-build@https://github.com/stamen/map-gl-style-build
 ```
 
-### For Everyone Else
+## Setting up your file structure
 
-If you want to use this tool for maintaining map styles, but need a more detailed explanation, see [INSTALLATION](INSTALLATION.md) for detailed setup instructions.
+The build script assumes you have two directories (whose names can be customized if you choose):
 
-## Typical Commands
+1.  The **styles** directory, which contains each style you want to build. Each style is defined as a JS module that exports two plain JS objects:
+    1. `context`: The variables this style defines that will be passed to layers during the build
+    2. `template`: The style, which is a [MapLibre GL style](https://maplibre.org/maplibre-style-spec/) or [Mapbox GL style](https://docs.mapbox.com/mapbox-gl-js/style-spec/), the only difference being that `layers` is an array of layer ids.
+2.  The **layers** directory, which contains each layer that will be included in a style. Each layer is defined as a JS module that exports a default function. The function takes one parameter: `context`, which contains the variables passed from a given style file to customize the layer appropriately. The function must return two objects:
+    1. `baseStyle`: The base style object
+    2. `overrides`: Any overrides to the `baseStyle`, may be an empty object if no overrides are necessary
 
-```bash
-# Basic build
-yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build
-
-# Verbose output
-yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build -v
-
-# Convert existing stylesheet
-yarn create-layer-templates --in-dir=styles --out-dir=templates --base-style-path=styles/main.json
+```
+your-project/
+├── templates/
+│   ├── layers/           # Individual layer definitions
+│   │   ├── roads.js
+│   │   ├── buildings.js
+│   │   └── labels.js
+│   └── styles/        # Single style file with embedded variables
+│       └── My_Map.js
+└── build/               # Generated directory containing the generated stylesheets
+    └── My_Map/
+        └── style.json
 ```
 
-**Note:** Some preparation is required before running these commands. See [Building From Scratch](#building-from-scratch) or [Converting Existing Stylesheets](#converting-existing-stylesheets) sections below for setup instructions.
+See the [Examples](#examples) directory in this repo for examples of the file structure.
+
+See [Building From Scratch](#building-from-scratch) or [Converting Existing Stylesheets](#converting-existing-stylesheets) for help setting this file structure up. 
 
 ### Converting Existing Stylesheets (Recommended)
 
@@ -52,7 +67,15 @@ If you already have Mapbox GL or Maplibre GL style JSON files, you can convert t
 
 ### Step 2: Convert to Templates
 
-Use the `create-layer-templates` command to break your stylesheets into manageable files:
+Use the `create-layer-templates` command to break your stylesheets into manageable files.
+
+Note that this script is only intended to be used once at the beginning of a project when implementing this system.
+
+Based on the prerequisite decisions about primary differentiators for variants, this script can do the initial work of:
+
+    Breaking existing JSON stylesheets out into the style template and layer JS files
+    Imposing a file structure on the repo
+
 
 ```bash
 yarn create-layer-templates \
@@ -65,6 +88,10 @@ yarn create-layer-templates \
 - `--in-dir`: Directory containing your existing style JSON files
 - `--out-dir`: Directory where template files will be created
 - `--base-style-path`: Path to your base/reference style file
+
+`--base-style-path` indicates the specific stylesheet that all other styles in the directory designated as `--in-dir` will be considered variations off of.
+
+You may manually delete the initial styles directory unless reusing it for building the templates to. The script avoids this step as there may occasionally be reason to archive these pre-build-system styles for posterity.
 
 **Directory Structure Flexibility:** The folder and file names in the project structure can be renamed to match your project's conventions without impacting functionality. For example, you could use `themes` instead of `styles`, `components` instead of `layers`, or `output` instead of `build`. Just update the corresponding command parameters accordingly within your project directory, and note the differences when consulting further in this documentation.
 
@@ -122,8 +149,7 @@ Use your favorite text editor to make changes to individual layer files, then re
 # Then rebuild
 yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layers --out-dir=build
 
-# Preview changes locally
-yarn preview  # (if configured in package.json)
+# Preview changes locally using a tool like [Maperture](https://github.com/stamen/maperture/)
 ```
 
 ### 2. Adding New Layers
@@ -383,7 +409,112 @@ your-project/
         └── style.json
 ```
 
+
+## Running the build script
+
+Once installed using your package manager with the appropriate file setup, you can run the compiler in Bash or Node JS:
+
+```bash
+# Bash
+map-gl-style-build
+    --style-dir=templates/styles
+    --layer-dir=templates/layers
+    --out-dir=build
+    --exclude=templates/styles/archived/*
+    -v
+```
+
+```js
+// JavaScript
+import { buildStyles } from 'map-gl-style-build';
+
+const styleDir = 'templates/styles';
+const layerDir = 'templates/layers';
+const outDir = 'build';
+const options = {
+  includeExcludePaths: [
+    { flag: 'exclude', pathPattern: 'templates/styles/archived/*' }
+  ],
+  verbose: false
+};
+
+buildStyles(styleDir, layerDir, outDir, options);
+```
+
+The parameters are as follows:
+
+- `--style-dir`: the style directory as defined above
+- `--layer-dir`: the layer directory as defined above
+- `--out-dir`: the directory built styles will be placed within
+- `--exclude`: **optional** glob pattern or file path specifying files to exclude from included files
+- `--include`: **optional** glob pattern or file path specifying files to include if varying from `style-dir` and `layer-dir`
+- `-v`: include for verbose output
+
 ## Advanced Features
+
+### Notes on `--include` and `--exclude` parameters
+
+Note that the `include` and `exclude` flags can be repeated and **order is relevant**.
+
+For example, if we have a file structure like:
+
+```
+styles /
+├── style-1.js
+├── style-2.js
+└── navigation /
+    ├── nav-style-1.js
+    └── nav-style-2.js
+```
+
+Then the following command would first ignore the `navigation` directory, but then explicitly include `nav-style-2.js` like the following:
+
+##### Command
+
+```
+map-gl-style-build
+    --style-dir=styles
+    --layer-dir=...
+    --out-dir=build
+    --exclude=styles/navigation/*
+    --include=styles/navigation/nav-style-2.js
+```
+
+##### Output
+
+```
+build /
+├── style-1 /
+│   └── style.json
+├── style-2 /
+│   └── style.json
+└── navigation /
+    └── nav-style-2/
+        └── style.json
+```
+
+Alternatively, switching the order of those would have the same effect as not using the `include` flag as in this scenario, we first explicitly include `nav-style-2.js` (it would have been included anyway, but using this for the sake of a simple example), then we'd exclude the entire `navigation` directory which includes that style. This means the built styles would include no `navigation` styles at all.
+
+##### Command
+
+```
+map-gl-style-build
+    --style-dir=styles
+    --layer-dir=...
+    --out-dir=...
+    --include=styles/navigation/nav-style-2.js
+    --exclude=styles/navigation/*
+```
+
+##### Output
+
+```
+build /
+├── style-1 /
+│   └── style.json
+└── style-2 /
+    └── style.json
+```
 
 ### Helper Functions
 
