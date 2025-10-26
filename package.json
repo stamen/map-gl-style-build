@@ -9,7 +9,8 @@
     "watch": "parcel watch",
     "build": "parcel build",
     "test": "jest --watchAll",
-    "jest-watch": "jest --watch"
+    "jest-watch": "jest --watch",
+    "build-examples": "examples/build-examples.sh"
   },
   "author": "Stamen Design",
   "license": "MIT",

@@ -392,6 +392,8 @@ The tool provides several utility functions for complex styling scenarios:
 #### `mergeOverrides`
 Merges overrides with a base style or other overrides. Typically you can rely on `map-gl-style-build` to add overrides to your layers' base styles, but sometimes it makes sense to merge overrides earlier in situations where a layer's styles are complicated.
 
+Specifically, this function seamlessly merges in style properties within `paint` or `layout` in a style layer definition.
+
 _Example:_
 
 ```js
@@ -433,6 +435,8 @@ module.exports.default = context => {
 #### `mergeVariables`
 Merges a variables object with an extender object to override variable values.
 
+This function operates similarly to `mergeOverrides` with less specificity to the style spec.
+
 _Example:_
 
 ```js
@@ -449,6 +453,42 @@ _Example:_
 
 #### `modifyNumberVariables`
 Takes a variable or object specifying variables and applies a math function to the values. Expression values have the math function applied to all outputs within the expression.
+
+This lets you easily apply math to variables to simplify the variables you track.
+
+For example, if you have a variable for a road's line width of:
+
+```
+baseRoadWidth: [
+  'interpolate',
+  ['linear'],
+  ['zoom'],
+  1,
+  5,
+  12,
+  20
+];
+```
+
+then you could adjust that for other layers by using math where:
+
+```
+modifyNumberVariables(variables.baseRoadWidth, '*', 2)
+```
+
+is equal to
+
+```
+baseRoadWidth: [
+  'interpolate',
+  ['linear'],
+  ['zoom'],
+  1,
+  10,
+  12,
+  40
+];
+```
 
 Supports the following operations:
 
