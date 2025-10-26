@@ -17,7 +17,7 @@ Instead of maintaining massive JSON stylesheets, `map-gl-style-build` lets you:
 - Users who need to maintain multiple stylesheets that are variations on one another and contain redundant style definitions
 - Users who need to maintain a single stylesheet and prefer to work on layers in a more composable and maintainable way
 
-This library is a compiler that turns your files into renderable JSON stylesheets. To use it effectively, it expects you to set up a specific directory and file structure. More on this below.
+This library is a compiler that turns your JS files into renderable JSON stylesheets. To use it effectively, it expects you to set up a specific directory and file structure. More on this below.
 
 ## Installation
 
@@ -75,7 +75,6 @@ Based on the prerequisite decisions about primary differentiators for variants, 
 
     Breaking existing JSON stylesheets out into the style template and layer JS files
     Imposing a file structure on the repo
-
 
 ```bash
 yarn create-layer-templates \
