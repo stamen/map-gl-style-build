@@ -17,8 +17,6 @@ export const buildStyles = async (
 
   let stylePaths = await fg([path.resolve(`${styleDir}/**/*.js`)]);
 
-  console.log(stylePaths);
-
   for (const includeExcludePath of includeExcludePaths) {
     const { flag, pathPattern } = includeExcludePath;
 
