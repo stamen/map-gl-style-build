@@ -160,6 +160,6 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Support
 
 - **Documentation**: See [INSTALLATION](INSTALLATION.md) for detailed setup instructions
-- **Examples**: Check the `examples/` directory
+- **Examples**: Check the [`examples/`](./examples/) directory
 - **Issues**: [GitHub Issues](https://github.com/stamen/map-gl-style-build/issues)
 
