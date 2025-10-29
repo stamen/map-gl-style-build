@@ -106,7 +106,7 @@ The tool provides several utility functions for complex styling scenarios: `merg
 
 ## Examples
 
-Check out the `examples/` directory for complete working examples:
+Check out the [`examples/`](./examples/) directory for complete working examples:
 
 - **`simple/`** - Basic single-style setup
 - **`shared-variables/`** - Using shared variables across styles
