@@ -62,7 +62,7 @@ templates/
 
 ### Step 4: Organize Variables (Optional)
 
-After conversion, you can organize variables to improve maintainability. This step is optional but recommended for complex styles. See the [Context Requirements](#context-requirements) section in Building From Scratch for explanations of how to organize variables.
+After conversion, you can organize variables to improve maintainability. This step is optional but recommended for complex styles. See the [Context Requirements](#context-requirements) section in Building From Scratch and the [Declaring Variables](./WORKFLOW.md#declaring-variables-separately) section in the Workflow documentation for explanations of how to organize variables.
 
 ### Step 5: Test your build system
 
