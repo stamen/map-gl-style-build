@@ -150,7 +150,7 @@ module.exports.template = {
 
 #### Context Requirements
 
-The `context` object contains variables that layers can reference. Each variable file must be declared using `require()`:
+The `context` object contains variables that layers can reference. If you choose to store variables in separate files (recommended for complex stylesheets) those files must be declared using `require()`:
 
 ```javascript
 // For separate variable files
@@ -174,6 +174,8 @@ module.exports.context = {
   }
 };
 ```
+
+See more information about using variables and variable files in [WORKFLOW.md](./WORKFLOW.md). Some helper functions for managing variables are documented in the [advanced documentation](./ADVANCED.md).
 
 #### Template Requirements
 

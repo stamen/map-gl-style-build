@@ -14,9 +14,9 @@ yarn map-gl-style-build --style-dir=templates/styles --layer-dir=templates/layer
 
 ### 2. Adding New Layers
 
-1. Create a new layer file in `templates/layers/`
-2. Add the layer name to your style variant's `layers` array
-3. Rebuild to see the changes
+1. Create a new layer file in `templates/layers/`.
+2. Add the layer name to your style variant's `layers` array. Note that this is the layer file's _filename_ you put into the array, not the layer's id.
+3. Rebuild to see the changes.
 
 ### 3. Creating Style Variants
 
@@ -148,3 +148,5 @@ your-project/
     └── dark-theme/
         └── style.json
 ```
+
+The `mergeVariables()` helper function (see documentation in [ADVANCED.md](./ADVANCED.md)) can assist in combining variables from multiple styles. Check out the [`shared-variables`](../examples/shared-variables/) example style to see it in use.
