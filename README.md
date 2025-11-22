@@ -55,7 +55,7 @@ See the [Examples](#examples) directory in this repo for examples of the file st
 
 See the [Implementation](./docs/IMPLEMENTATION.md) documentation for help setting this file structure up, which includes sections on [Converting Existing Stylesheets](./docs/IMPLEMENTATION.md#converting-existing-stylesheets) or [Building From Scratch](./docs/IMPLEMENTATION.md#building-from-scratch). 
 
-After setting up your file structure, see [Cartographic Workflow](./WORKFLOW.md) for common tasks with the build system, and more information about working with variables.
+After setting up your file structure, see [Cartographic Workflow](./docs/WORKFLOW.md) for common tasks with the build system, and more information about working with variables.
 
 ## Usage
 
@@ -159,7 +159,7 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## Support
 
-- **Documentation**: See [INSTALLATION](INSTALLATION.md) for detailed setup instructions
+- **Documentation**: See [INSTALLATION](./docs/INSTALLATION.md) for detailed setup instructions
 - **Examples**: Check the [`examples/`](./examples/) directory
 - **Issues**: [GitHub Issues](https://github.com/stamen/map-gl-style-build/issues)
 
