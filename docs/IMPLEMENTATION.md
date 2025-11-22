@@ -62,7 +62,7 @@ templates/
 
 ### Step 4: Organize Variables (Optional)
 
-After conversion, you can organize variables to improve maintainability. This step is optional but recommended for complex styles. See the [Defining Style Variables](#defining-style-variables) section in Building From Scratch for explanations of how to organize variables.
+After conversion, you can organize variables to improve maintainability. This step is optional but recommended for complex styles. See the [Defining Style Variables](#context-requirements) section in Building From Scratch for explanations of how to organize variables.
 
 ### Step 5: Test your build system
 
